@@ -93,3 +93,6 @@ public class Script : ScriptBase, System.IDisposable
 
 }
 ```
+
+**依赖**：  
+https://github.com/doghappy/socket.io-client-csharp
