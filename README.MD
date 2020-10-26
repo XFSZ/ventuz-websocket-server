@@ -6,7 +6,7 @@
     三、在脚本中需要引入 using Newtonsoft.Json.Linq; using SocketIOClient;  
     ![alt 截图1](./2.png)  
     四、VENTUZ脚本总是出一些奇奇怪怪的 编译错误 例如： await 多余问题 需要手动加上new System.EventHandler 且不支持lamda表达式  dll文件的各种不兼容
-
+    
 ```cs 
 using System;
 using System.Collections;
@@ -68,6 +68,7 @@ public class Script : ScriptBase, System.IDisposable
 	public bool OnMethod1(int arg)
 	{
 		client = new SocketIO("http://127.0.0.1:3000/");
+        // 接收功能 触发指令
 		client.On("users", response =>
 			{
 			string text = response.GetValue<string>();
@@ -81,6 +82,7 @@ public class Script : ScriptBase, System.IDisposable
 //		Console.WriteLine("hello");
 		return false;
 	}
+    //发送功能
 	public async void Backval(object sender, EventArgs e) {
 		await client.EmitAsync("users", response =>
 			{
