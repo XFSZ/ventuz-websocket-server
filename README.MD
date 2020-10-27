@@ -1,11 +1,13 @@
 # 如何在VENTUZ下使用C#版的Socketio 
 **使用方法**  
     一、新建脚本  
-    二、在脚本的左下角References选项卡中 找到PAC Assemblies  点击添加一下三个 dll  
+    二、在脚本的左下角References选项卡中 找到PAC Assemblies  点击添加一下三个 dll 
     ![alt 截图1](./1.png)   
     三、在脚本中需要引入 using Newtonsoft.Json.Linq; using SocketIOClient;  
     ![alt 截图1](./2.png)  
-    四、VENTUZ脚本总是出一些奇奇怪怪的 编译错误 例如： await 多余问题 需要手动加上new System.EventHandler 且不支持lamda表达式  dll文件的各种不兼容
+    四、VENTUZ脚本总是出一些奇奇怪怪的 编译错误 例如： await 多余问题 需要手动加上new System.EventHandler 且不支持lamda表达式  dll文件的各种不兼容  
+    五、 更新renderer需要 changed = true;  
+    ![alt 截图1](./3.png) 
     
 ```cs 
 using System;
