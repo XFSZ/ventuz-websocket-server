@@ -1,7 +1,7 @@
 # 如何在VENTUZ下使用C#版的Socketio 
 **使用方法**  
     一、新建脚本  
-    二、在脚本的左下角References选项卡中 找到PAC Assemblies  点击添加一下三个 dll 
+    二、在脚本的左下角References选项卡中 找到PAC Assemblies  点击添加一下三个 dll  dll必须得是4.5 
     ![alt 截图1](./1.png)   
     三、在脚本中需要引入 using Newtonsoft.Json.Linq; using SocketIOClient;  
     ![alt 截图1](./2.png)  
@@ -28,10 +28,18 @@ public class Script : ScriptBase, System.IDisposable
     // during its next execution.
     private bool changed;
     private JToken result;
-	private	SocketIO client;
+	public	SocketIO client= new SocketIO("http://127.0.0.1:3000/");
+	public string latestMyName = "who";
+    public string latestRoom = "X-Art";
+	public		JToken res;
+	public JToken res2;
+   // public	System.Timers.Timer t = new System.Timers.Timer();
+   // private	bool init = false;
+	
     // This Method is called if the component is loaded/created.
     public Script()
     {
+		//client = new SocketIO("http://127.0.0.1:3000/");
         // Note: Accessing input or output properties from this method
         // will have no effect as they have not been allocated yet.
     }
@@ -42,11 +50,11 @@ public class Script : ScriptBase, System.IDisposable
     }
     
     // This Method is called if an input property has changed its value
-    public override void Validate()
-    {
+  //  public override void Validate()
+ //   {
         // Remember: set changed to true if any of the output 
         // properties has been changed, see Generate()
-    }
+ //   }
     
     // This Method is called every time before a frame is rendered.
     // Return value: if true, Ventuz will notify all nodes bound to this
@@ -56,44 +64,132 @@ public class Script : ScriptBase, System.IDisposable
     //               values really have been changed.
     public override bool Generate()
     {
+		
+			changed = true;
         if (changed)
         {
-            changed = false;
+	//				if(init){
+	//		t.Interval = 1000;
+	//		t.Elapsed += Tick;
+	//		t.Start();
+	//		init = false;
+	//				}
+           // changed = false;
+			//
             return true;
-        }
+		}
+
+	
+
 
         return false;
 	}
 	
+	
+	// This Method is called if an input property has changed its value
+	public override void Validate()
+	{   
+	
+		// Remember: set changed to true if any of the output 
+		// properties has been changed, see Generate()
+		if ((string.IsNullOrEmpty(this.MyName) == false && latestMyName.Equals(this.MyName) == false))
+		{
+			latestMyName = this.MyName;
+			//OnReGetData(-1);
+		}	
+		if ((string.IsNullOrEmpty(this.Room) == false && latestRoom.Equals(this.Room) == false))
+		{
+			latestRoom = this.Room;
+			//OnReGetData(-1);
+		}
+	//	else if (isNeedInitData == true)
+	//	{
+			//OnReGetData(-1);
+	//	}
+	}
+	
 	// This Method is called if the function/method Method1 is invoked by the user or a bound event.
 	// Return true, if this component has to be revalidated!
-	public bool OnMethod1(int arg)
+	public bool OnConnectHost(int arg)
 	{
-		client = new SocketIO("http://127.0.0.1:3000/");
-        // 接收功能 触发指令
+	//	client = new SocketIO("http://127.0.0.1:3000/");
 		client.On("users", response =>
 			{
 			string text = response.GetValue<string>();
-			outputStr = text;
+		//	OutPutTest = text;
 			});
+		client.On("getCameraValue", response =>
+			{
+			res = response.GetValue();
+		//	Alpha = Convert.ToDouble(res.Value<string>("alpha"))*(180/Math.PI) ;
+			Alpha = Convert.ToDouble(res.Value<string>("alpha")) *(180/Math.PI)-90;
+			Beta = Convert.ToDouble(res.Value<string>("beta"))*(180/Math.PI);
+			Radius = Convert.ToDouble(res.Value<string>("radius"))*(0.01d);
+			res2 = res.Value<JToken>("target");
+			//VLog.Info(res2.Value<string>("x").ToString());
+
+			TargetX  = Convert.ToDouble(res2.Value<string>("x"));
+			TargetY  = Convert.ToDouble(res2.Value<string>("y"));
+			TargetZ  = Convert.ToDouble(res2.Value<string>("z"));
+			
+			res2 = res.Value<JToken>("position");
+			PositionX =  Convert.ToDouble(res2.Value<string>("x"));
+			PositionY =  Convert.ToDouble(res2.Value<string>("y"));
+			PositionZ =  Convert.ToDouble(res2.Value<string>("z"));
+			
+		//	changed = true;
+			});
+     	
+		client.OnPing += Socket_OnPing;
+		client.OnPong += Socket_OnPong;
 		client.OnConnected += new System.EventHandler(Backval);
 		client.ConnectAsync();
-	//	client = new SocketIO("http://127.0.0.1:3000");
-	 //  	client.OnConnected += Backval;
-	//	await client.ConnectAsync();
-//		Console.WriteLine("hello");
-		return false;
+
+		return true;
 	}
-    //发送功能
 	public async void Backval(object sender, EventArgs e) {
-		await client.EmitAsync("users", response =>
+	
+		string jsonstr = @"{'name':'"+latestMyName+"','room':'"+latestRoom+"'}";
+	//	OutPutTest = jsonstr;
+		await client.EmitAsync("users", new
 			{
-			result = response.GetValue();
-			Console.WriteLine(result);
-			}, ".net core");
+					home="lates"
+			}, "AYU");
+		await client.EmitAsync("joinroom", response =>
+			{
+	
+			}, jsonstr);
+
 	}
 
+	private  void Socket_OnPing(object sender, EventArgs e)
+	{
+		Console.WriteLine("Ping");
+	}
+
+	private  void Socket_OnPong(object sender, TimeSpan e)
+	{
+		Console.WriteLine("Pong: " + e.TotalMilliseconds);
+		Latency = e.TotalMilliseconds.ToString();
+	}
+	public void Tick(object sender, EventArgs e) {
+		client.EmitAsync("Ping");
+	}
+	// This Method is called if the function/method DisconnectHost is invoked by the user or a bound event.
+	// Return true, if this component has to be revalidated!
+	public bool OnDisconnectHost()
+	{
+		client.EmitAsync("disconnect", response =>
+			{
+		//	string text = response.GetValue<string>();
+		VLog.Info("disconnect");
+			});
+		return true;
+	}
+
+
 }
+
 ```
 
 **依赖**：  
