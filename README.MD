@@ -194,3 +194,48 @@ public class Script : ScriptBase, System.IDisposable
 
 **依赖**：  
 https://github.com/doghappy/socket.io-client-csharp
+
+**excel 转 json**
+```cs 
+	 void ParseFile(string excelPath)
+	{
+		VLog.Info(ExcelURL);
+		excelPath = ExcelURL;
+		Stream stream = new FileStream(excelPath, FileMode.Open, FileAccess.Read);
+		var index = excelPath.LastIndexOf('.');
+		var extensionName = excelPath.Substring(index + 1);
+
+		VLog.Info("2");
+
+		var reader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+		if(reader == null)
+		{
+			VLog.Info("文件错误");
+			return;
+		}
+
+		var dt = reader.AsDataSet();
+		dt.AcceptChanges();
+		VLog.Info(dt.ToString());
+		string json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+		VLog.Info(json.ToString());
+		JsonStr = json;
+	//	if(dt.Tables.Count < 2)
+	//	{
+//			Console.WriteLine("文件：" + excelPath + " 找不到第二张表");
+//			return;
+//		}
+
+	//	var table = dt.Tables[1];
+	//	var cols = table.Columns.Count;
+
+	//	if(cols <= 1)
+	//	{
+//			Console.WriteLine("文件：" + excelPath + " 需要至少有两列");
+//			return;
+//		}
+
+	}
+
+
+```
