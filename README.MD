@@ -215,6 +215,14 @@ https://github.com/doghappy/socket.io-client-csharp
 		}
 
 		var dt = reader.AsDataSet();
+		// 当 将第一行作为表头是使用
+/*		var dt = reader.AsDataSet(new ExcelDataSetConfiguration() {
+				ConfigureDataTable = (_) => new ExcelDataTableConfiguration() {
+					UseHeaderRow = true
+					}
+				});
+				*/    
+
 		dt.AcceptChanges();
 		VLog.Info(dt.ToString());
 		string json = JsonConvert.SerializeObject(dt, Formatting.Indented);
